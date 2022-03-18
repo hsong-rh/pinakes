@@ -21,7 +21,7 @@ from pinakes.main.common.utils import (
 )
 
 
-__all__ = ['register', 'gather', 'ship']
+__all__ = ["register", "gather", "ship"]
 
 # TODO: add analytics logger
 logger = logging.getLogger("analytics")
@@ -284,7 +284,11 @@ def gather(
 
         # from pinakes.main.signals import disable_activity_stream
 
-        logger.debug("Last analytics run was: {}".format(settings.AUTOMATION_ANALYTICS_LAST_GATHER))
+        logger.debug(
+            "Last analytics run was: {}".format(
+                settings.AUTOMATION_ANALYTICS_LAST_GATHER
+            )
+        )
 
         try:
             since, until, last_gather = calculate_collection_interval(
@@ -308,7 +312,9 @@ def gather(
             and hasattr(func, "__pinakes_analytics_key__")
             and (not subset or name in subset)
         ]
-        if not any(c.__pinakes_analytics_key__ == 'config' for c in collector_list):
+        if not any(
+            c.__pinakes_analytics_key__ == "config" for c in collector_list
+        ):
             # In order to ship to analytics, we must include the output of the built-in 'config' collector.
             collector_list.append(collectors.config)
 
@@ -429,9 +435,11 @@ def gather(
                             )
                         }
 
-                        payload['config.json'] = data.get('config.json')
-                        if payload['config.json'] is None:
-                            logger.error("'config' collector data is missing, and is required to ship.")
+                        payload["config.json"] = data.get("config.json")
+                        if payload["config.json"] is None:
+                            logger.error(
+                                "'config' collector data is missing, and is required to ship."
+                            )
                             return None
 
                         tgzfile = package(dest.parent, payload, until)
@@ -478,7 +486,10 @@ def gather(
             #         # what is actually collected than it used to; collectors now mostly rely on their respective entry
             #         # under `last_entries` to determine what should be collected.
             #         settings.AUTOMATION_ANALYTICS_LAST_GATHER = until
-            if not settings.AUTOMATION_ANALYTICS_LAST_GATHER or until > settings.AUTOMATION_ANALYTICS_LAST_GATHER:
+            if (
+                not settings.AUTOMATION_ANALYTICS_LAST_GATHER
+                or until > settings.AUTOMATION_ANALYTICS_LAST_GATHER
+            ):
                 settings.AUTOMATION_ANALYTICS_LAST_GATHER = until
 
         shutil.rmtree(

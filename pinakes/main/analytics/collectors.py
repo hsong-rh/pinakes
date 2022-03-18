@@ -1,4 +1,5 @@
 import os
+
 # import distro
 import platform
 
@@ -27,36 +28,36 @@ data _since_ the last report date - i.e., new data in the last 24 hours)
 """
 
 
-@register('config', '1.0', description=_('General platform configuration.'))
+@register("config", "1.0", description=_("General platform configuration."))
 def config(since, **kwargs):
     # license_info = get_license()
     license_info = {}
-    install_type = 'traditional'
-    if os.environ.get('container') == 'oci':
-        install_type = 'openshift'
-    elif 'KUBERNETES_SERVICE_PORT' in os.environ:
-        install_type = 'k8s'
+    install_type = "traditional"
+    if os.environ.get("container") == "oci":
+        install_type = "openshift"
+    elif "KUBERNETES_SERVICE_PORT" in os.environ:
+        install_type = "k8s"
     return {
-        'platform': {
-            'system': platform.system(),
+        "platform": {
+            "system": platform.system(),
             # 'dist': distro.linux_distribution(),
-            'release': platform.release(),
-            'type': install_type,
+            "release": platform.release(),
+            "type": install_type,
         },
         # 'install_uuid': settings.INSTALL_UUID,
         # 'instance_uuid': settings.SYSTEM_UUID,
         # 'tower_url_base': settings.TOWER_URL_BASE,
         # 'tower_version': get_awx_version(),
-        'tower_version': '1.0.0',
-        'license_type': license_info.get('license_type', 'UNLICENSED'),
-        'free_instances': license_info.get('free_instances', 0),
-        'total_licensed_instances': license_info.get('instance_count', 0),
-        'license_expiry': license_info.get('time_remaining', 0),
+        "tower_version": "1.0.0",
+        "license_type": license_info.get("license_type", "UNLICENSED"),
+        "free_instances": license_info.get("free_instances", 0),
+        "total_licensed_instances": license_info.get("instance_count", 0),
+        "license_expiry": license_info.get("time_remaining", 0),
         # 'pendo_tracking': settings.PENDO_TRACKING_STATE,
         # 'authentication_backends': settings.AUTHENTICATION_BACKENDS,
         # 'logging_aggregators': settings.LOG_AGGREGATOR_LOGGERS,
         # 'external_logger_enabled': settings.LOG_AGGREGATOR_ENABLED,
-        'external_logger_type': getattr(settings, 'LOG_AGGREGATOR_TYPE', None),
+        "external_logger_type": getattr(settings, "LOG_AGGREGATOR_TYPE", None),
     }
 
 
@@ -547,13 +548,18 @@ def product_counts(since, **kwargs):
         order_item_list = []
         for item in models.OrderItem.objects.filter(
             portfolio_item_id=product["id"]
-        ).values("name", "state", "inventory_task_ref"):
+        ).values("id", "name", "state", "order_id", "inventory_task_ref"):
             order_item_list.append(item)
 
         if bool(order_item_list):
             counts[product["id"]] = {
                 "name": product["name"],
-                "orders": order_item_list,
+                "portfolio_id": product["portfolio_id"],
+                "service_offering_ref": product["service_offering_ref"],
+                "service_offering_source_ref": product[
+                    "service_offering_source_ref"
+                ],
+                "order items": order_item_list,
             }
 
     return counts
@@ -572,11 +578,13 @@ def tag_counts_by_portfolio(since, **kwargs):
     for portfolio in portfolios:
         tag_resource_list = []
         for resource in portfolio.tag_resources:
-            tag_resource_list.append({
-                "id": resource.id,
-                "name": resource.name,
-                "slug": resource.slug,
-            })
+            tag_resource_list.append(
+                {
+                    "id": resource.id,
+                    "name": resource.name,
+                    "slug": resource.slug,
+                }
+            )
 
         if bool(tag_resource_list):
             counts[portfolio.id] = {
@@ -585,7 +593,7 @@ def tag_counts_by_portfolio(since, **kwargs):
                     "app_name": "catalog",
                     "object_type": "Portfolio",
                     "tags": tag_resource_list,
-                }
+                },
             }
 
     return counts
@@ -604,11 +612,13 @@ def tag_counts_by_product(since, **kwargs):
     for product in products:
         tag_resource_list = []
         for resource in product.tag_resources:
-            tag_resource_list.append({
-                "id": resource.id,
-                "name": resource.name,
-                "slug": resource.slug,
-            })
+            tag_resource_list.append(
+                {
+                    "id": resource.id,
+                    "name": resource.name,
+                    "slug": resource.slug,
+                }
+            )
 
         if bool(tag_resource_list):
             counts[product.id] = {
@@ -617,7 +627,7 @@ def tag_counts_by_product(since, **kwargs):
                     "app_name": "catalog",
                     "object_type": "PortfolioItem",
                     "tags": tag_resource_list,
-                }
+                },
             }
 
     return counts
@@ -636,11 +646,13 @@ def tag_counts_by_service_intentory(since, **kwargs):
     for service_intentory in service_intentories:
         tag_resource_list = []
         for resource in service_intentory.tags.all():
-            tag_resource_list.append({
-                "id": resource.id,
-                "name": resource.name,
-                "slug": resource.slug,
-            })
+            tag_resource_list.append(
+                {
+                    "id": resource.id,
+                    "name": resource.name,
+                    "slug": resource.slug,
+                }
+            )
 
         if bool(tag_resource_list):
             counts[service_intentory.id] = {
@@ -649,7 +661,7 @@ def tag_counts_by_service_intentory(since, **kwargs):
                     "app_name": "inventory",
                     "object_type": "ServiceInventory",
                     "tags": tag_resource_list,
-                }
+                },
             }
 
     return counts
